@@ -9,10 +9,10 @@ class RedirectIfAuthenticated
 {
     public function handle($request, Closure $next, $guard = null)
     {
-        if (Auth::guard($guard)->check()) {
-            return redirect('/home'); // O la ruta a la que quieras redirigir después de iniciar sesión
+        if (Auth::guard($guard)->check() && $request->path() !== 'home') {
+            return redirect('/home');
         }
-
+        
         return $next($request);
     }
 }

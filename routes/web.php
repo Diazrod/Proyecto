@@ -31,57 +31,31 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 //Route::get('/', [LoginController::class, 'showLoginForm'])->name('root.login');
 
 
-
-// Ruta de inicio de sesión
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('root.login');
-Route::post('login', [LoginController::class, 'login']);
-Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
-// Ruta que muestra la vista de verificación de email
-Route::get('/email/verify', function () {
-    return view('auth.verify-email');
-})->middleware('auth')->name('verification.notice');
-
-// Ruta que maneja el enlace de verificación en el email
-Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-    $request->fulfill();
-    return redirect('/home');
-})->middleware(['auth', 'signed'])->name('verification.verify');
-
-// Ruta para reenviar el email de verificación
-Route::post('/email/verification-notification', function () {
-    $user = Auth::user(); // Obtén el usuario autenticado
-
-    if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail()) {
-        $user->sendEmailVerificationNotification();
-        return back()->with('message', 'Verification link sent!');
-    }
-
-    return back()->with('message', 'Your email is already verified.');
-})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-
-// Rutas de Restablecimiento de Contraseña (Password Reset)
+// Rutas de autenticación
+Route::middleware('guest')->group(function () {
+    // Ruta raíz muestra el formulario de login
+    Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [LoginController::class, 'login']);
+    
+    // Rutas de Restablecimiento de Contraseña (Password Reset)
 Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
 Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('password/reset/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
 Route::post('password/reset', [ResetPasswordController::class, 'reset'])->name('password.update');
+    // Otras rutas para usuarios no autenticados, como registro
+});
+
 
 // Grupo de rutas protegidas por autenticación y verificación de email
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/home', [DashboardController::class, 'dashboard'])->name('home');
-});
 
-// Grupo de rutas protegidas por autenticación
-Route::middleware('auth')->group(function () {
 
     Route::resource('roles', RoleController::class);
     Route::resource('objetos', ObjetosController::class);
     Route::resource('permisos', PermisosController::class);
-   
     
     // Rutas de autenticación
- 
     Route::get('users', [UserController::class, 'index'])->name('users.index');
     Route::get('users/create', [CustomRegisterController::class, 'showCustomRegistrationForm'])->name('users.create');
     Route::post('users', [CustomRegisterController::class, 'register'])->name('users.store');
@@ -315,4 +289,32 @@ Route::put('/updateSolicitud/{id}', [CalendarController::class, 'updateSolicitud
 Route::get('Calendar', [CalendarController::class, 'index'])->name('Calendar/index');
 
 });
+
+
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+
+// Ruta que muestra la vista de verificación de email
+Route::get('/email/verify', function () {
+    return view('auth.verify-email');
+})->middleware('auth')->name('verification.notice');
+
+// Ruta que maneja el enlace de verificación en el email
+Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
+    $request->fulfill();
+    return redirect('/home');
+})->middleware(['auth', 'signed'])->name('verification.verify');
+
+// Ruta para reenviar el email de verificación
+Route::post('/email/verification-notification', function () {
+    $user = Auth::user(); // Obtén el usuario autenticado
+
+    if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$user->hasVerifiedEmail()) {
+        $user->sendEmailVerificationNotification();
+        return back()->with('message', 'Verification link sent!');
+    }
+
+    return back()->with('message', 'Your email is already verified.');
+})->middleware(['auth', 'throttle:6,1'])->name('verification.send');
+
+
 

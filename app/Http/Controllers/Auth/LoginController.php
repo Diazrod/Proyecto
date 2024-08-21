@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\URL;
 
 class LoginController extends Controller
 {
@@ -74,6 +75,12 @@ class LoginController extends Controller
 
         // Log exitoso de autenticación
         Log::info('User logged in successfully', ['user_id' => $user->id]);
+
+   // Evitar bucle de redirección
+   if (URL::previous() === route('login')) {
+    return redirect()->intended($this->redirectPath());
+
+}
 
         // Redireccionar al dashboard después del login
         return redirect()->intended($this->redirectPath());

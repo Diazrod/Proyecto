@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 
 class DashboardController extends Controller
 {
+    
     public function dashboard()
     {
         // Inicializar los contadores
@@ -65,4 +66,5 @@ class DashboardController extends Controller
         // Pasar los contadores a la vista
         return view('home', compact('data'));
     }
+    
 }
